@@ -56,6 +56,8 @@ pipeline {
         cleanWs()
         unstash 'src'
         sh '''
+          whoami
+          hostname
           sam build
           sam validate
           sam deploy --config-env staging
@@ -95,6 +97,8 @@ pipeline {
             usernameVariable: 'GH_USER',
             passwordVariable: 'GH_TOKEN')]) {
           sh '''
+            whoami
+            hostname
             git config user.email "jenkins@unir.edu"
             git config user.name  "Jenkins CI"
             git fetch origin master
