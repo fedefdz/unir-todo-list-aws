@@ -19,12 +19,14 @@ class TestApiReadOnly(unittest.TestCase):
 
     def test_api_listtodos_readonly(self):
         url = BASE_URL + "/todos"
+        print(f"GET {url}")
         response = requests.get(url, timeout=DEFAULT_TIMEOUT)
+        body = response.json()
+        print(f"  -> status {response.status_code}, items={len(body)}")
         self.assertEqual(
             response.status_code, 200,
             f"GET {url} devolvio {response.status_code}"
         )
-        body = response.json()
         self.assertIsInstance(
             body, list,
             "El endpoint /todos debe devolver una lista"
@@ -33,7 +35,9 @@ class TestApiReadOnly(unittest.TestCase):
     def test_api_gettodo_notfound_readonly(self):
         missing_id = str(uuid.uuid4())
         url = BASE_URL + "/todos/" + missing_id
+        print(f"GET {url}")
         response = requests.get(url, timeout=DEFAULT_TIMEOUT)
+        print(f"  -> status {response.status_code}, body={response.text[:120]}")
         self.assertEqual(
             response.status_code, 404,
             f"GET {url} de un id inexistente debe ser 404"
