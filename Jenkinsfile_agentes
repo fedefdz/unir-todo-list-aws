@@ -39,6 +39,8 @@ pipeline {
         cleanWs()
         unstash 'src'
         sh '''
+          whoami
+          hostname
           sam build
           sam validate
           sam deploy --config-env production
