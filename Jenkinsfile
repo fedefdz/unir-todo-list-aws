@@ -25,6 +25,10 @@ pipeline {
           hostname
           echo $WORKSPACE
           git log -1 --oneline
+          # fetch env config from the config repo (staging branch)
+          curl -fsSL -o samconfig.toml \
+            https://raw.githubusercontent.com/fedefdz/unir-todo-list-aws-config/staging/samconfig.toml
+          head samconfig.toml
         '''
       }
     }
