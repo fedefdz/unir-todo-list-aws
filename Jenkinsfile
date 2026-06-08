@@ -24,6 +24,9 @@ pipeline {
           hostname
           echo $WORKSPACE
           git log -1 --oneline
+          curl -fsSL -o samconfig.toml \
+            https://raw.githubusercontent.com/fedefdz/unir-todo-list-aws-config/production/samconfig.toml
+          head samconfig.toml
         '''
       }
     }
