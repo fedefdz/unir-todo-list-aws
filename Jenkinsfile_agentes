@@ -1,0 +1,70 @@
+pipeline {
+  agent none
+
+  options {
+    timestamps()
+    buildDiscarder(logRotator(numToKeepStr: '10'))
+    timeout(time: 20, unit: 'MINUTES')
+    skipDefaultCheckout()
+  }
+
+  environment {
+    AWS_DEFAULT_REGION = 'us-east-1'
+    STACK              = 'todo-list-aws-production'
+  }
+
+  stages {
+
+    stage('Get Code') {
+      agent { label 'built-in' }
+      steps {
+        cleanWs()
+        checkout scm
+        sh '''
+          whoami
+          hostname
+          echo $WORKSPACE
+          git log -1 --oneline
+        '''
+        stash name: 'src', includes: '**', excludes: '.git/**'
+      }
+    }
+
+    stage('Deploy Production') {
+      agent { label 'built-in' }
+      steps {
+        cleanWs()
+        unstash 'src'
+        sh '''
+          sam build
+          sam validate
+          sam deploy --config-env production
+        '''
+      }
+    }
+
+    stage('Rest Test') {
+      agent { label 'rest' }
+      steps {
+        cleanWs()
+        unstash 'src'
+        sh '''
+          whoami
+          hostname
+          # the rest agent reads the api url straight from cloudformation
+          API=$(aws cloudformation describe-stacks --stack-name $STACK \
+            --query 'Stacks[0].Outputs[?OutputKey==`BaseUrlApi`].OutputValue' --output text)
+          echo "API: $API"
+          BASE_URL="$API" pytest -v \
+            test/integration/todoApiReadOnlyTest.py \
+            --junitxml=result-rest.xml
+        '''
+      }
+      post {
+        always {
+          junit allowEmptyResults: true, testResults: 'result-rest.xml'
+        }
+      }
+    }
+  }
+}
