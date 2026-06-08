@@ -87,7 +87,12 @@ pipeline {
             git config user.name  "Jenkins CI"
             git fetch origin master
             git checkout -B master origin/master
-            git merge --no-ff origin/develop -m "auto-merge develop -> master (Jenkins #$BUILD_NUMBER)"
+            git merge --no-ff origin/develop \
+              -m "auto-merge develop -> master (Jenkins #$BUILD_NUMBER)"
+            # keep the CD Jenkinsfile that lives on master
+            git checkout HEAD~ -- Jenkinsfile
+            git add Jenkinsfile
+            git diff --cached --quiet || git commit --amend --no-edit
             git push "https://${GH_USER}:${GH_TOKEN}@${REPO_PATH}" master
           '''
         }
