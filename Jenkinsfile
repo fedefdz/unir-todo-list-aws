@@ -47,7 +47,7 @@ pipeline {
           API=$(aws cloudformation describe-stacks --stack-name $STACK \
             --query 'Stacks[0].Outputs[?OutputKey==`BaseUrlApi`].OutputValue' --output text)
           echo "API: $API"
-          BASE_URL="$API" pytest -v \
+          BASE_URL="$API" pytest -v -s \
             test/integration/todoApiReadOnlyTest.py \
             --junitxml=result-rest.xml
         '''
