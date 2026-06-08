@@ -87,12 +87,10 @@ pipeline {
             git config user.name  "Jenkins CI"
             git fetch origin master
             git checkout -B master origin/master
-            git merge --no-ff origin/develop \
+            # -X ours keeps master's Jenkinsfile (CD pipeline) on conflict;
+            # develop only diverges from master on this file.
+            git merge --no-ff -X ours origin/develop \
               -m "auto-merge develop -> master (Jenkins #$BUILD_NUMBER)"
-            # keep the CD Jenkinsfile that lives on master
-            git checkout HEAD~ -- Jenkinsfile
-            git add Jenkinsfile
-            git diff --cached --quiet || git commit --amend --no-edit
             git push "https://${GH_USER}:${GH_TOKEN}@${REPO_PATH}" master
           '''
         }
